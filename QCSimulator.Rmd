@@ -33,10 +33,25 @@ q10010_
 ```
 
 ### Compute the inner product of vectors
+For example of phi = 1/2|0> + sqrt(3)/2|1> and si= 1/sqrt(2)(10> + |1>) then the 
+inner product is the dot product of the vectors
+```{r}
+phi = matrix(c(1/2,sqrt(3)/2),nrow=2,ncol=1)
+si = matrix(c(1/sqrt(2),1/sqrt(2)),nrow=2,ncol=1)
+angle= innerProduct(phi,si)
+cat("Angle between vectors is:",angle)
+```
 
 
 ### Compute the dagger function for a gate
-### To check the unitary matrix of gates
+The gate dagger computes and displays the transpose of the complex conjugate of
+the matrix
+```{r}
+TGate(I2)
+GateDagger(TGate(I2))
+```
+
+### To display the unitary matrix of gates
 To check the unitary matrix of gates we need to pass the appropriate
 identity matrix. Hence below the qubit gates require a 2 x 2 unitary matrix
 and the 2 & 3 qubit CNOT gates require a 4 x 4 and 8 x 8 identity matrix
@@ -51,6 +66,8 @@ CNOT3_20(I8)
 ```
 
 #Invoking gates in series
+The Quantum gates can be chained by passing each preceding Quantum gate as
+the argument.
 
 ```{r}
 # Call in reverse order
@@ -90,15 +107,140 @@ plotMeasurement(result)
 ### Invoking gates in parallel
 To obtain the results of gates in parallel we have to taje the Tensor Product
 
-
+Q0  -- Hadamard-Measurement
+Q1  -- Identity- Measurement
 ```{r}
-# Creating the Entangled state
+# 
 a = TensorProd(Hadamard(I2),I2)
 b = DotProduct(a,q00_)
+plotMeasurement(measurement(b))
+
+a = TensorProd(PauliZ(I2),Hadamard(I2))
+b = DotProduct(a,q00_)
+plotMeasurement(measurement(b))
+
 ```
 
 
 # Measurement
+The measurement of a Quantum circuit can be obtained using the meaurement function.
+Consider the following Quantum circuit
+
+Q0 - H-T-H-T-S-H-T-H-T-H-T-H-S-Measurement
+where H - Hadamard gate, T - T Gate and S- S Gate
+```{r}
+a = SGate(Hadamard(TGate(Hadamard(TGate(Hadamard(TGate(Hadamard(SGate(TGate(Hadamard(TGate(Hadamard(I2)))))))))))))
+measurement(a)
+```
 
 
 ### Plot measurement
+Using the same example as above 
+Q0 - H-T-H-T-S-H-T-H-T-H-T-H-S-Measurement
+where H - Hadamard gate, T - T Gate and S- S Gate 
+we can plot the measurement
+```{r}
+a = SGate(Hadamard(TGate(Hadamard(TGate(Hadamard(TGate(Hadamard(SGate(TGate(Hadamard(TGate(Hadamard(I2)))))))))))))
+result = measurement(a)
+plotMeasurement(result)
+```
+
+
+### Evaluating a Quantum Circuit 
+The above procedure for evaluating a quantum gates in series and parallel can be 
+used to evalute more complex quantum circuits were the quantum gates are in series
+and parallel.
+
+Here is an evaluation of one such circuit, the Bell ZQ state using the QCSimulator
+```{r}
+# 1st composite
+a = TensorProd(Hadamard(I2),I2)
+# Output of CNOT
+b = CNOT2_01(a)
+# 2nd series
+c=Hadamard(TGate(Hadamard(SGate(I2))))
+#2nd composite
+d= TensorProd(I2,c)
+# Output of 2nd composite
+e = DotProduct(b,d)
+#Action of quantum circuit on |00>
+f = DotProduct(e,q00_)
+result= measurement(f)
+plotMeasurement(result)
+```
+
+###Toffoli State
+This circuit for this comes from IBM's Quantum Experience. This circuit
+is available in the package. This is how the state was constructed
+```{r}
+  # Computation of the Toffoli State
+    H=1/sqrt(2) * matrix(c(1,1,1,-1),nrow=2,ncol=2)
+    I=matrix(c(1,0,0,1),nrow=2,ncol=2)
+
+    # 1st composite
+    # H x H x H
+    a = TensorProd(TensorProd(H,H),H)
+    # 1st CNOT
+    a1= CNOT3_12(a)
+
+    # 2nd composite
+    # I x I x T1Gate
+    b = TensorProd(TensorProd(I,I),T1Gate(I))
+    b1 = DotProduct(b,a1)
+    c = CNOT3_02(b1)
+
+    # 3rd composite
+    # I x I x TGate
+    d = TensorProd(TensorProd(I,I),TGate(I))
+    d1 = DotProduct(d,c)
+    e = CNOT3_12(d1)
+
+    # 4th composite
+    # I x I x T1Gate
+    f = TensorProd(TensorProd(I,I),T1Gate(I))
+    f1 = DotProduct(f,e)
+    g = CNOT3_02(f1)
+
+    #5th composite
+    # I x T x T
+    h = TensorProd(TensorProd(I,TGate(I)),TGate(I))
+    h1 = DotProduct(h,g)
+    i = CNOT3_12(h1)
+
+    #6th composite
+    # I x H x H
+    j = TensorProd(TensorProd(I,Hadamard(I)),Hadamard(I))
+    j1 = DotProduct(j,i)
+    k = CNOT3_12(j1)
+
+    # 7th composite
+    # I x H x H
+    l = TensorProd(TensorProd(I,Hadamard(I)),Hadamard(I))
+    l1 = DotProduct(l,k)
+    m = CNOT3_12(l1)
+    n = CNOT3_02(m)
+
+    #8th composite
+    # T x H x T1
+    o = TensorProd(TensorProd(TGate(I),Hadamard(I)),T1Gate(I))
+    o1 = DotProduct(o,n)
+    p = CNOT3_02(o1)
+    result = measurement(p)
+    plotMeasurement(result)
+```
+
+### GHZ YYX measurement
+```{r}
+a = TensorProd(TensorProd(Hadamard(I2),Hadamard(I2)),PauliX(I2))
+b= CNOT3_12(a)
+c= CNOT3_02
+d= TensorProd(TensorProd(Hadamard(I2),Hadamard(I2)),Hadamard(I2))
+e= DotProduct(d,c)
+f= TensorProd(TensorProd(S1Gate(I2),S1Gate(I2)),Hadamard(I2))
+g= DotProduct(f,e)
+i= TensorProd(TensorProd(Hadamard(I2),Hadamard(I2)),I2)
+j = DotProduct(i,g)
+result=measurement(j)
+plotMeasurement(result)
+```
+
