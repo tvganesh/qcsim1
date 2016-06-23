@@ -31,6 +31,33 @@ q0100_
 # Qubit 10010
 q10010_
 ```
+### To display the unitary matrix of gates
+To check the unitary matrix of gates we need to pass the appropriate
+identity matrix. Hence below the qubit gates require a 2 x 2 unitary matrix
+and the 2 & 3 qubit CNOT gates require a 4 x 4 and 8 x 8 identity matrix
+respectivelt
+```{r}
+
+PauliX(I2)
+Hadamard(I2)
+S1Gate(I2)
+CNOT2_10(I4)
+CNOT3_20(I8)
+```
+
+### Applying gates
+**Note** To apply a quantum gate the gate can be called by passing the identity matrix
+to it. For e.g applying take a look at the following.
+
+Q0 -- Hadamard - PauliZ
+Q1 -- TGate- Hadamard
+```{r}
+Q0 = PauliZ(Hadamard(I2))
+Q0
+Q1 = Hadamard(TGate(I2))
+Q1
+```
+
 
 ### Compute the inner product of vectors
 For example of phi = 1/2|0> + sqrt(3)/2|1> and si= 1/sqrt(2)(10> + |1>) then the 
@@ -233,7 +260,7 @@ is available in the package. This is how the state was constructed
 ```{r}
 a = TensorProd(TensorProd(Hadamard(I2),Hadamard(I2)),PauliX(I2))
 b= CNOT3_12(a)
-c= CNOT3_02
+c= CNOT3_02(b)
 d= TensorProd(TensorProd(Hadamard(I2),Hadamard(I2)),Hadamard(I2))
 e= DotProduct(d,c)
 f= TensorProd(TensorProd(S1Gate(I2),S1Gate(I2)),Hadamard(I2))
