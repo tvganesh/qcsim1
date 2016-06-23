@@ -1,0 +1,104 @@
+---
+title: "QCSimulator.Rmd"
+author: "Tinniam V Ganesh"
+date: "June 22, 2016"
+output: html_document
+---
+
+```{r }
+library(QCSimulator)
+library(ggplot2)
+```
+
+#Initialize the environment and set global variables
+```{r}
+rm(list=ls())
+#Call the init function to initialize the environment and create global variables
+init()
+
+# Display global variables in environment
+ls()
+# 2 x 2 Identity matrix 
+I2
+# 8 x 8 Identity matrix 
+I8
+# Qubit |00>
+q00_
+# Qubit |010>
+q010_
+# Qubit |0100>
+q0100_
+# Qubit 10010
+q10010_
+```
+
+### Compute the inner product of vectors
+
+
+### Compute the dagger function for a gate
+### To check the unitary matrix of gates
+To check the unitary matrix of gates we need to pass the appropriate
+identity matrix. Hence below the qubit gates require a 2 x 2 unitary matrix
+and the 2 & 3 qubit CNOT gates require a 4 x 4 and 8 x 8 identity matrix
+respectivelt
+```{r}
+
+PauliX(I2)
+Hadamard(I2)
+S1Gate(I2)
+CNOT2_10(I4)
+CNOT3_20(I8)
+```
+
+#Invoking gates in series
+
+```{r}
+# Call in reverse order
+# Superposition states
+# |+> state
+Hadamard(q0_)
+# |->
+PauliZ(Hadamard(q0_))
+
+# (+i) Y
+ SGate(Hadamard(q0_))
+
+# (-i)Y
+ S1Gate(Hadamard(q0_))
+```
+
+### More gates in series
+#### TGate of depth 2
+
+The Quantum circuit for a TGate of Depth 2 is
+
+Q0 ---   Hadamard-TGate-Hadamard-TGate-SGate-Measurement
+
+```{r}
+# Invoking this in reverse order we get
+
+a = SGate(TGate(Hadamard(TGate(Hadamard(q0_)))))
+result=measurement(a)
+
+plotMeasurement(result)
+
+```
+
+
+
+
+### Invoking gates in parallel
+To obtain the results of gates in parallel we have to taje the Tensor Product
+
+
+```{r}
+# Creating the Entangled state
+a = TensorProd(Hadamard(I2),I2)
+b = DotProduct(a,q00_)
+```
+
+
+# Measurement
+
+
+### Plot measurement
